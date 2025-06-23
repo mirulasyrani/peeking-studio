@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap');
+
+
+body {
+  @apply bg-gray-50 text-gray-800 font-sans;
+}
+
+@keyframes fade-in-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down 1s ease-out;
+}
+.bg-pegboard {
+  background-color: #f3e9dc; /* cream base */
+  background-image: radial-gradient(#d6c7b0 1px, transparent 1px);
+  background-size: 20px 20px;
+}
