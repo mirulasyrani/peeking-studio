@@ -8,4 +8,10 @@ module.exports = {
     },
   },
   plugins: [],
+  // Add this 'variants' section
+  variants: {
+    extend: {
+      display: ['print'], // Enable print variant for display utilities
+    },
+  },
 };

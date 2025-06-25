@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -6,11 +6,13 @@ export default function GalleryProjectPage() {
   const { projectFolder } = useParams();
   const [images, setImages] = useState<string[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [direction, setDirection] = useState<1 | -1>(1); // Track slide direction
+  const [direction, setDirection] = useState<1 | -1>(1);
   const navigate = useNavigate();
+  const wheelTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchImages = useCallback(() => {
-    const imageCount = 4;
+    if (!projectFolder) return;
+    const imageCount = 4; // TODO: Fetch dynamically if needed
     const loadedImages: string[] = [];
     for (let i = 1; i <= imageCount; i++) {
       loadedImages.push(`/gallery/${projectFolder}/${i}.png`);
@@ -22,40 +24,48 @@ export default function GalleryProjectPage() {
     fetchImages();
   }, [fetchImages]);
 
-  const close = () => setSelectedIndex(null);
+  const close = useCallback(() => setSelectedIndex(null), []);
 
-  const next = () => {
-    setDirection(1);
-    setSelectedIndex((prev) => (prev !== null ? (prev + 1) % images.length : null));
-  };
+  const next = useCallback(() => {
+    if (images.length > 0) {
+      setDirection(1);
+      setSelectedIndex(prev => (prev !== null ? (prev + 1) % images.length : 0));
+    }
+  }, [images.length]);
 
-  const prev = () => {
-    setDirection(-1);
-    setSelectedIndex((prev) => (prev !== null ? (prev - 1 + images.length) % images.length : null));
-  };
+  const prev = useCallback(() => {
+    if (images.length > 0) {
+      setDirection(-1);
+      setSelectedIndex(prev => (prev !== null ? (prev - 1 + images.length) % images.length : 0));
+    }
+  }, [images.length]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (selectedIndex !== null) {
         if (e.key === 'ArrowRight') next();
-        if (e.key === 'ArrowLeft') prev();
-        if (e.key === 'Escape') close();
+        else if (e.key === 'ArrowLeft') prev();
+        else if (e.key === 'Escape') close();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIndex]);
+  }, [selectedIndex, next, prev, close]);
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      if (selectedIndex !== null) {
+      if (selectedIndex !== null && !wheelTimeoutRef.current) {
         if (e.deltaY > 0) next();
-        if (e.deltaY < 0) prev();
+        else if (e.deltaY < 0) prev();
+
+        wheelTimeoutRef.current = setTimeout(() => {
+          wheelTimeoutRef.current = null;
+        }, 300);
       }
     };
     window.addEventListener('wheel', handleWheel);
     return () => window.removeEventListener('wheel', handleWheel);
-  }, [selectedIndex]);
+  }, [selectedIndex, next, prev]);
 
   return (
     <div className="min-h-screen bg-[#17388E] text-white pt-24 px-4">
@@ -63,29 +73,34 @@ export default function GalleryProjectPage() {
         <button
           className="mb-6 text-white underline hover:text-pink-400"
           onClick={() => navigate('/gallery')}
+          aria-label="Back to gallery"
         >
           ← Back to Gallery
         </button>
 
         <h1 className="text-4xl font-bold text-center mb-10 capitalize">
-          {projectFolder?.replace(/-/g, ' ')}
+          {projectFolder?.replace(/[-_]/g, ' ') || 'Untitled Project'}
         </h1>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {images.map((src, index) => (
-            <div
-              key={index}
-              className="cursor-pointer overflow-hidden rounded-xl shadow-lg group"
-              onClick={() => setSelectedIndex(index)}
-            >
-              <img
-                src={src}
-                alt={`Image ${index + 1}`}
-                className="w-full h-80 object-cover object-top group-hover:scale-105 transition duration-300"
-              />
-            </div>
-          ))}
-        </div>
+        {images.length === 0 ? (
+          <p className="text-center text-white/70">No images found for this project.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {images.map((src, index) => (
+              <div
+                key={index}
+                className="cursor-pointer overflow-hidden rounded-xl shadow-lg group"
+                onClick={() => setSelectedIndex(index)}
+              >
+                <img
+                  src={src}
+                  alt={`Image ${index + 1}`}
+                  className="w-full h-80 object-cover object-top group-hover:scale-105 transition duration-300"
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
@@ -99,52 +114,51 @@ export default function GalleryProjectPage() {
           >
             <motion.div
               className="relative max-w-6xl w-full p-4"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.95 }}
             >
-              {/* Close button */}
               <button
                 onClick={close}
                 className="absolute top-2 right-2 text-white text-3xl font-bold hover:text-pink-400"
+                aria-label="Close preview"
               >
                 &times;
               </button>
 
-              {/* Left arrow */}
               <button
                 onClick={prev}
                 className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white text-3xl p-1 rounded-full z-10"
+                aria-label="Previous image"
               >
                 ←
               </button>
 
-              {/* Right arrow */}
               <button
                 onClick={next}
                 className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white text-3xl p-1 rounded-full z-10"
+                aria-label="Next image"
               >
                 →
               </button>
 
-              {/* Animated image preview */}
               <div className="relative flex items-center justify-center w-full h-[80vh] overflow-hidden">
                 <AnimatePresence initial={false} custom={direction}>
                   <motion.img
                     key={selectedIndex}
                     src={images[selectedIndex]}
-                    alt={`Image ${selectedIndex}`}
+                    alt={`Preview ${selectedIndex + 1}`}
                     className="max-w-full max-h-[80vh] object-contain rounded shadow-lg absolute"
                     custom={direction}
                     initial={{ x: direction === 1 ? 150 : -150, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     exit={{ x: direction === 1 ? -150 : 150, opacity: 0 }}
                     transition={{
-                        duration: 0.25,
-                        ease: [0.4, 0, 0.2, 1], // Custom easing for a smoother transition
+                      duration: 0.25,
+                      ease: [0.4, 0, 0.2, 1],
                     }}
-                    />
+                  />
                 </AnimatePresence>
               </div>
             </motion.div>

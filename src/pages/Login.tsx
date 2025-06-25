@@ -1,17 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../utils/AuthContext';
+import { useAuth } from '../utils/useAuth';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/admin'); // redirect if already logged in
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const success = await login(username, password);
     if (success) {
       navigate('/admin');
@@ -23,11 +28,11 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-[#17388E] flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-[#1b2f70] text-white p-8 rounded-2xl shadow-xl border border-white/10">
-        <h1 className="text-3xl font-bold text-center text-white-400 mb-8">Admin Login</h1>
+        <h1 className="text-3xl font-bold text-center mb-8">Admin Login</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block mb-1 text-sm font-medium text-white-300">Username</label>
+            <label className="block mb-1 text-sm font-medium">Username</label>
             <input
               type="text"
               required
@@ -38,7 +43,7 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="block mb-1 text-sm font-medium text-white-300">Password</label>
+            <label className="block mb-1 text-sm font-medium">Password</label>
             <input
               type="password"
               required
@@ -50,7 +55,7 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full bg-green-600 hover:bg-white-700 text-white font-semibold py-3 rounded-md transition"
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-md transition"
           >
             Login
           </button>

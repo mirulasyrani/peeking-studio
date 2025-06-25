@@ -4,26 +4,69 @@ export default function UploadImages() {
   const [title, setTitle] = useState('');
   const [folder, setFolder] = useState('');
   const [caption, setCaption] = useState('');
-  const [image, setImage] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [images, setImages] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImage(file);
-      setPreviewUrl(URL.createObjectURL(file));
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files);
+      setImages(fileArray);
+
+      // Revoke old URLs to avoid memory leaks
+      previewUrls.forEach(url => URL.revokeObjectURL(url));
+
+      setPreviewUrls(fileArray.map(file => URL.createObjectURL(file)));
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!image || !title || !folder) {
+
+    if (images.length === 0 || !title.trim() || !folder.trim()) {
       alert('Please fill in all required fields.');
       return;
     }
 
-    console.log({ title, folder, caption, image });
-    alert('Simulated upload successful. Check console.');
+    setUploading(true);
+    setMessage(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('title', title.trim());
+      formData.append('folder', folder.trim());
+      formData.append('caption', caption.trim());
+
+      images.forEach((imageFile) => {
+        formData.append('images', imageFile);
+      });
+
+      const response = await fetch('/api/upload/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setMessage(`Upload successful! Uploaded ${data.files.length} file(s).`);
+
+      // Reset form on success
+      setTitle('');
+      setFolder('');
+      setCaption('');
+      setImages([]);
+      previewUrls.forEach(url => URL.revokeObjectURL(url));
+      setPreviewUrls([]);
+    } catch (error: any) {
+      setMessage(`Error: ${error.message || 'Unknown error'}`);
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -40,8 +83,9 @@ export default function UploadImages() {
             type="text"
             className="w-full border px-4 py-2 rounded-lg"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={e => setTitle(e.target.value)}
             required
+            disabled={uploading}
           />
         </div>
 
@@ -51,8 +95,9 @@ export default function UploadImages() {
             type="text"
             className="w-full border px-4 py-2 rounded-lg"
             value={folder}
-            onChange={(e) => setFolder(e.target.value)}
+            onChange={e => setFolder(e.target.value)}
             required
+            disabled={uploading}
           />
         </div>
 
@@ -62,38 +107,55 @@ export default function UploadImages() {
             type="text"
             className="w-full border px-4 py-2 rounded-lg"
             value={caption}
-            onChange={(e) => setCaption(e.target.value)}
+            onChange={e => setCaption(e.target.value)}
+            disabled={uploading}
           />
         </div>
 
         <div>
-          <label className="block font-medium mb-1">Image *</label>
+          <label className="block font-medium mb-1">Images *</label>
           <input
             type="file"
             accept="image/*"
+            multiple
             onChange={handleImageChange}
             className="w-full"
             required
+            disabled={uploading}
           />
         </div>
 
-        {previewUrl && (
+        {previewUrls.length > 0 && (
           <div className="mt-4">
             <p className="mb-2 font-medium">Preview:</p>
-            <img
-              src={previewUrl}
-              alt="Preview"
-              className="w-full max-h-80 object-contain border rounded-lg"
-            />
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {previewUrls.map((url, idx) => (
+                <img
+                  key={idx}
+                  src={url}
+                  alt={`Preview ${idx + 1}`}
+                  className="w-full max-h-40 object-cover border rounded-lg"
+                />
+              ))}
+            </div>
           </div>
         )}
 
         <button
           type="submit"
-          className="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-6 rounded-lg w-full"
+          disabled={uploading}
+          className={`bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-6 rounded-lg w-full ${
+            uploading ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
-          Simulate Upload
+          {uploading ? 'Uploading...' : 'Upload Images'}
         </button>
+
+        {message && (
+          <p className="mt-4 text-center font-medium">
+            {message}
+          </p>
+        )}
       </form>
     </div>
   );

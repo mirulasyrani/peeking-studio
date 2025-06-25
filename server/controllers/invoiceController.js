@@ -2,7 +2,7 @@ const {
   createInvoiceDB,
   getInvoiceById,
   confirmInvoicePayment,
-} = require('../models/Invoice'); // ✅ Capital I
+} = require('models/Invoice'); // ✅ Capital I
 
 const createInvoice = async (req, res) => {
   try {

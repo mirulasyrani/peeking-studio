@@ -22,28 +22,6 @@ export default function Book() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const generateTimeOptions = (startHour = 8, endHour = 20) => {
-    const times: Date[] = [];
-    const base = new Date();
-    base.setMinutes(0, 0, 0);
-    for (let h = startHour; h <= endHour; h++) {
-      for (let m = 0; m < 60; m += 30) {
-        const time = new Date(base);
-        time.setHours(h, m);
-        times.push(time);
-      }
-    }
-    return times;
-  };
-
-  const allTimes = generateTimeOptions();
-
-  const validEndTimes = startTime
-    ? allTimes.filter(
-        (time) => time.getTime() - startTime.getTime() >= 60 * 60 * 1000 // At least 1 hour later
-      )
-    : [];
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -128,13 +106,14 @@ export default function Book() {
               selected={selectedDate}
               onChange={(date) => setSelectedDate(date)}
               dateFormat="MMMM d, yyyy"
+              minDate={new Date()}
               className="w-full border border-gray-300 p-3 rounded"
               placeholderText="Select date"
               required
             />
           </div>
 
-          {/* Start & End Time Pickers (Side-by-side) */}
+          {/* Start & End Time Pickers */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block mb-1 font-medium">Start Time</label>
@@ -142,7 +121,7 @@ export default function Book() {
                 selected={startTime}
                 onChange={(time) => {
                   setStartTime(time);
-                  setEndTime(null); // Reset end time on start change
+                  setEndTime(null); // Reset end time
                 }}
                 showTimeSelect
                 showTimeSelectOnly
@@ -182,6 +161,14 @@ export default function Book() {
               />
             </div>
           </div>
+
+          {/* Booking time summary */}
+          {startTime && endTime && (
+            <p className="text-sm text-gray-600 text-center">
+              Booking time: {startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} –{' '}
+              {endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </p>
+          )}
 
           <textarea
             name="notes"
