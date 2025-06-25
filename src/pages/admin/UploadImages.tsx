@@ -62,8 +62,12 @@ export default function UploadImages() {
       setImages([]);
       previewUrls.forEach(url => URL.revokeObjectURL(url));
       setPreviewUrls([]);
-    } catch (error: any) {
-      setMessage(`Error: ${error.message || 'Unknown error'}`);
+    } catch (error: unknown) {
+      let errorMessage = 'Unknown error';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      setMessage(`Error: ${errorMessage}`);
     } finally {
       setUploading(false);
     }
@@ -134,7 +138,7 @@ export default function UploadImages() {
                   key={idx}
                   src={url}
                   alt={`Preview ${idx + 1}`}
-                  className="w-full max-h-40 object-cover border rounded-lg"
+                  className="w-full max-h-40 object-cover border border-teal-600 rounded-lg"
                 />
               ))}
             </div>
@@ -144,7 +148,7 @@ export default function UploadImages() {
         <button
           type="submit"
           disabled={uploading}
-          className={`bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-6 rounded-lg w-full ${
+          className={`bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-6 rounded-lg w-full ${
             uploading ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
@@ -152,7 +156,7 @@ export default function UploadImages() {
         </button>
 
         {message && (
-          <p className="mt-4 text-center font-medium">
+          <p className="mt-4 text-center font-medium text-teal-300">
             {message}
           </p>
         )}

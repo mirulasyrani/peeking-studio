@@ -5,17 +5,18 @@ const fs = require("fs");
 
 const router = express.Router();
 
+const sanitizeFolderName = (name) => name.replace(/[^a-zA-Z0-9-_]/g, "_");
+
 // Storage config
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     try {
-      // Use folder name from req.body
-      const folderName = req.body.folder;
+      let folderName = req.body.folder;
       if (!folderName) {
         return cb(new Error("Folder name is required"));
       }
+      folderName = sanitizeFolderName(folderName);
       const folderPath = path.join(__dirname, "..", "uploads", folderName);
-      // Create folder recursively if it doesn't exist
       fs.mkdirSync(folderPath, { recursive: true });
       cb(null, folderPath);
     } catch (err) {
@@ -23,7 +24,6 @@ const storage = multer.diskStorage({
     }
   },
   filename: (req, file, cb) => {
-    // prepend timestamp to original filename to avoid conflicts
     cb(null, Date.now() + "-" + file.originalname);
   },
 });
@@ -45,7 +45,7 @@ router.post("/upload", upload.array("images", 10), (req, res) => {
 
     const fileInfos = req.files.map(file => ({
       filename: file.filename,
-      path: file.path.replace(/\\/g, "/"), // Normalize Windows paths to URL format
+      path: file.path.replace(/\\/g, "/"),
     }));
 
     return res.status(200).json({

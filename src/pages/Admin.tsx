@@ -12,16 +12,8 @@ export default function Admin() {
   const { logout } = auth;
 
   return (
-    <div className="min-h-screen bg-[#17388E] text-white py-20 px-6 relative">
-      {/* ✅ Logout Button */}
-      <div className="absolute top-6 right-6 z-50">
-        <button
-          onClick={logout}
-          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow transition"
-        >
-          Logout
-        </button>
-      </div>
+    <div className="min-h-screen bg-[#17388E] text-white py-24 px-6 relative">
+     
 
       <h1 className="text-4xl font-bold text-center mb-12">Admin Dashboard</h1>
 

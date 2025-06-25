@@ -1,10 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import logo from '/peeking-logo.png';
 import { useEffect, useState } from 'react';
+import { useAuth } from '../utils/useAuth'; // import your auth hook
 
 export default function Navbar() {
   const { pathname } = useLocation();
   const [scrolled, setScrolled] = useState(false);
+
+  const auth = useAuth(); // get auth state and methods
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,27 +33,43 @@ export default function Navbar() {
           <span className="text-white text-2xl font-bold">Peeking Visuals</span>
         </Link>
 
-        <nav className="flex space-x-4">
+        <nav className="flex items-center space-x-4">
+          {/* Common navigation links */}
           {[
             { to: '/', label: 'Home' },
             { to: '/gallery', label: 'Gallery' },
             { to: '/book', label: 'Make Your Booking' },
             { to: '/about', label: 'About Us' },
-            { to: '/admin', label: 'Admin Login' },
-            
           ].map(({ to, label }) => (
             <Link
               key={to}
               to={to}
               className={`text-white px-4 py-2 rounded-full hover:bg-[#102866] transition ${
-                pathname === to || pathname.startsWith(to + '/')
-                  ? 'bg-[#0D1E50]'
-                  : ''
+                pathname === to || pathname.startsWith(to + '/') ? 'bg-[#0D1E50]' : ''
               }`}
             >
               {label}
             </Link>
           ))}
+
+          {/* Conditional admin login/logout */}
+          {!auth.isAuthenticated ? (
+            <Link
+              to="/admin"
+              className={`text-white px-4 py-2 rounded-full hover:bg-[#102866] transition ${
+                pathname === '/admin' ? 'bg-[#0D1E50]' : ''
+              }`}
+            >
+              Admin Login
+            </Link>
+          ) : (
+            <button
+              onClick={auth.logout}
+              className="text-white px-4 py-2 rounded-full bg-red-600 hover:bg-red-700 transition cursor-pointer"
+            >
+              Logout
+            </button>
+          )}
         </nav>
       </div>
     </header>
