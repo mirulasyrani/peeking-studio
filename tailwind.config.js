@@ -1,3 +1,4 @@
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
@@ -7,14 +8,12 @@ module.exports = {
       },
     },
   },
-  plugins: [],
-  // Add this 'variants' section
+  plugins: [
+    require('@tailwindcss/line-clamp'),
+  ],
   variants: {
     extend: {
       display: ['print'], // Enable print variant for display utilities
     },
   },
-  plugins: [
-  require('@tailwindcss/line-clamp'),
-],
 };
