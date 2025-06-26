@@ -33,6 +33,8 @@ const frontendSchema = z.object({
 
 export default function CreateQuotation() {
   const navigate = useNavigate();
+  
+console.log("VITE_API_URL is:", import.meta.env.VITE_API_URL);
 
   const [formData, setFormData] = useState({
     quotation_no: 'QT-' + Date.now(),
