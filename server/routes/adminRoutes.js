@@ -1,24 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const { requireAdmin } = require('../middleware/authMiddleware');
-const invoiceSchema = require('../validators/invoiceSchema');
-const db = require('../db'); // PG Pool instance
-const { z } = require('zod');
+const db = require('../db'); // PostgreSQL pool
+const { invoiceSchema, invoiceIdParamSchema } = require('../validators/invoiceSchema');
 
-// Zod validation wrapper
-const validate = (schema) => (req, res, next) => {
+// ✅ Reusable Zod validation middleware with source support
+const validate = (schema, source = 'body') => (req, res, next) => {
   try {
-    schema.parse(req.body);
+    schema.parse(req[source]);
     next();
   } catch (err) {
     return res.status(400).json({ errors: err.errors });
   }
 };
 
-// Apply admin JWT middleware to all /api/admin routes
+// ✅ Apply admin JWT middleware to all routes
 router.use(requireAdmin);
 
-// Create new invoice
+// ✅ Create new invoice
 router.post('/invoices', validate(invoiceSchema), async (req, res) => {
   const { clientName, email, sessionType, date, amount, notes } = req.body;
 
@@ -37,8 +36,8 @@ router.post('/invoices', validate(invoiceSchema), async (req, res) => {
   }
 });
 
-// Delete invoice
-router.delete('/invoices/:id', async (req, res) => {
+// ✅ Delete invoice (with param validation)
+router.delete('/invoices/:id', validate(invoiceIdParamSchema, 'params'), async (req, res) => {
   try {
     await db.query(`DELETE FROM invoices WHERE id = $1`, [req.params.id]);
     res.json({ message: 'Invoice deleted' });
@@ -47,8 +46,8 @@ router.delete('/invoices/:id', async (req, res) => {
   }
 });
 
-// Confirm payment
-router.patch('/invoices/:id/confirm', async (req, res) => {
+// ✅ Confirm payment (with param validation)
+router.patch('/invoices/:id/confirm', validate(invoiceIdParamSchema, 'params'), async (req, res) => {
   try {
     const result = await db.query(
       `UPDATE invoices SET paid = true WHERE id = $1 RETURNING *`,

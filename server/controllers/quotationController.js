@@ -1,13 +1,11 @@
-const quotationModel = require('models/quotation');
+const quotationModel = require('../models/quotation');
 const path = require('path');
 const fs = require('fs');
-const sendEmail = require('../utils/mailer'); // ✅ Ensure this util exists
+const sendEmail = require('../utils/mailer');
 
 // ✅ Create Quotation
 exports.createQuotation = async (req, res) => {
   try {
-    console.log('Received quotation data:', req.body);
-
     const quotation = await quotationModel.createQuotation(req.body);
     res.status(201).json(quotation);
   } catch (err) {
@@ -24,27 +22,37 @@ exports.getQuotation = async (req, res) => {
     if (!quotation) return res.status(404).json({ error: 'Quotation not found' });
     res.json(quotation);
   } catch (err) {
-    console.error(err);
+    console.error('❌ Get Quotation Error:', err);
     res.status(500).json({ error: 'Failed to fetch quotation' });
   }
 };
 
-// ✅ Upload PDF and save file path to DB
+// ✅ Upload PDF to /uploads/quotations/{quotationId}/filename.pdf
 exports.uploadPDF = async (req, res) => {
   try {
     const { id } = req.params;
+    if (!req.file) return res.status(400).json({ error: 'No PDF file uploaded' });
 
-    if (!req.file) {
-      return res.status(400).json({ error: 'No PDF file uploaded' });
-    }
+    const folderPath = path.join(__dirname, '..', 'uploads', 'quotations', id);
+    fs.mkdirSync(folderPath, { recursive: true });
 
-    const pdfUrl = `/uploads/${req.file.filename}`;
-    await quotationModel.updatePDFUrl(id, pdfUrl);
+    // Use the file that was already stored by multer in the folder
+    const oldPath = req.file.path;
+    const newFileName = `quotation-${Date.now()}.pdf`;
+    const newPath = path.join(folderPath, newFileName);
 
-    res.status(200).json({ message: 'PDF uploaded successfully', pdfUrl });
+    fs.renameSync(oldPath, newPath);
+
+    const relativeUrl = `/uploads/quotations/${id}/${newFileName}`;
+    await quotationModel.updatePDFUrl(id, relativeUrl);
+
+    res.status(200).json({
+      message: 'PDF uploaded and saved successfully',
+      pdfUrl: relativeUrl,
+    });
   } catch (err) {
     console.error('❌ Upload PDF Error:', err);
-    res.status(500).json({ error: 'Failed to upload PDF' });
+    res.status(500).json({ error: 'Failed to upload and save PDF' });
   }
 };
 
@@ -59,20 +67,15 @@ exports.sendQuotationEmail = async (req, res) => {
       return res.status(400).json({ error: 'No PDF associated with this quotation' });
     }
 
-    const pdfPath = path.join(__dirname, '..', quotation.pdf_url);
+    const pdfPath = path.join(__dirname, '..', quotation.pdf_url.replace(/^\/+/, '')); // clean leading slash
     if (!fs.existsSync(pdfPath)) {
       return res.status(404).json({ error: 'PDF file not found on server' });
     }
 
-    // Email details
-    const subject = `Quotation ${quotation.quotation_no}`;
-    const text = `Dear ${quotation.client_name},\n\nPlease find attached your quotation.`;
-    const to = quotation.client_email;
-
     await sendEmail({
-      to,
-      subject,
-      text,
+      to: quotation.client_email,
+      subject: `Quotation ${quotation.quotation_no}`,
+      text: `Dear ${quotation.client_name},\n\nPlease find attached your quotation.`,
       attachments: [
         {
           filename: path.basename(pdfPath),

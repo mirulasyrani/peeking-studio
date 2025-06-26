@@ -9,8 +9,6 @@ export default function Admin() {
     return <div className="text-center text-red-500">Auth not available.</div>;
   }
 
-  const { logout } = auth;
-
   return (
     <div className="min-h-screen bg-[#17388E] text-white py-24 px-6 relative">
      

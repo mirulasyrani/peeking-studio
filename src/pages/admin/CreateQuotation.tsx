@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from '../../api/axiosInstance'; // ✅ Updated to use instance
+import axios from '../../api/axiosInstance';
+import { z } from 'zod';
 
 type Item = {
   description: string;
@@ -8,6 +9,27 @@ type Item = {
   unit_price: string;
   total: string;
 };
+
+// Zod schema for frontend validation
+const frontendSchema = z.object({
+  quotation_no: z.string().min(1),
+  client_name: z.string().min(1),
+  client_email: z.string().email(),
+  client_address: z.string().min(1),
+  project_title: z.string().min(1),
+  project_date: z.string().min(1),
+  notes: z.string().optional(),
+  items: z.array(
+    z.object({
+      description: z.string().min(1),
+      quantity: z.string().refine(val => !isNaN(Number(val)) && Number(val) > 0),
+      unit_price: z.string().refine(val => !isNaN(Number(val)) && Number(val) >= 0),
+      total: z.string().optional(),
+    })
+  ).nonempty(),
+  total_amount: z.number().min(0),
+  amount_in_words: z.string().min(1),
+});
 
 export default function CreateQuotation() {
   const navigate = useNavigate();
@@ -51,21 +73,51 @@ export default function CreateQuotation() {
     setItems([...items, { description: '', quantity: '', unit_price: '', total: '' }]);
   };
 
-  const totalAmount = items.reduce((sum, item) => sum + parseFloat(item.total || '0'), 0);
-  const amountInWords = totalAmount === 0 ? '' : numberToWords(totalAmount) + ' Ringgit';
+  const total_amount = items.reduce((sum, item) => sum + parseFloat(item.total || '0'), 0);
+  const amount_in_words = total_amount === 0 ? '' : numberToWords(total_amount);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      const res = await axios.post('/quotations', {
-        ...formData,
-        items,
-        total_amount: totalAmount,
-        amount_in_words: amountInWords,
-      });
+    const payload = {
+      quotation_no: formData.quotation_no.trim(),
+      client_name: formData.client_name.trim(),
+      client_email: formData.client_email.trim(),
+      client_address: formData.client_address.trim(),
+      project_title: formData.project_title.trim(),
+      project_date: formData.project_date.trim(),
+      notes: formData.notes?.trim() || '',
+      items: items.map(item => ({
+        description: item.description.trim(),
+        quantity: item.quantity.trim(),
+        unit_price: item.unit_price.trim(),
+        total: item.total,
+      })),
+      total_amount,
+      amount_in_words,
+    };
 
-      navigate(`/admin/quotations/${(res.data as { id: string | number }).id}`);
+    const parsed = frontendSchema.safeParse(payload);
+    if (!parsed.success) {
+      console.error('Validation errors:', parsed.error.format());
+      alert('Please check the form for errors before submitting.');
+      return;
+    }
+
+    try {
+      const res = await axios.post('/quotations', payload);
+      navigate(`/admin/quotations/${res.data.id}`);
+
+      setFormData({
+        quotation_no: 'QT-' + Date.now(),
+        client_name: '',
+        client_email: '',
+        client_address: '',
+        project_title: '',
+        project_date: '',
+        notes: '',
+      });
+      setItems([{ description: '', quantity: '', unit_price: '', total: '' }]);
     } catch (err) {
       console.error('Failed to create quotation:', err);
       alert('Error saving quotation.');
@@ -161,9 +213,9 @@ export default function CreateQuotation() {
         </div>
 
         <div className="text-right font-semibold">
-          Total: RM {totalAmount.toFixed(2)}
+          Total: RM {total_amount.toFixed(2)}
           <br />
-          <span className="italic text-sm">{amountInWords}</span>
+          <span className="italic text-sm">{amount_in_words}</span>
         </div>
 
         <button

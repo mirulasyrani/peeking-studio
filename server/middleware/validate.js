@@ -1,11 +1,6 @@
-// middleware/validate.js
-module.exports = (schema) => (req, res, next) => {
+module.exports = (schema, source = 'body') => (req, res, next) => {
   try {
-    schema.parse({
-      body: req.body,
-      params: req.params,
-      query: req.query,
-    });
+    req[source] = schema.parse(req[source]);
     next();
   } catch (err) {
     return res.status(400).json({ errors: err.errors });

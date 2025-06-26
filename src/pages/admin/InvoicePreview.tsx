@@ -62,7 +62,6 @@ export default function InvoicePreview() {
 
   const [showMenu, setShowMenu] = useState(false);
 
-  // Ref for description textareas to enable auto-resizing
   const descriptionRefs = useRef<(HTMLTextAreaElement | null)[]>([]);
   useEffect(() => {
     if (!isGeneratingPdf) {
@@ -94,8 +93,7 @@ export default function InvoicePreview() {
 
   const handleDownloadPDF = async () => {
     setIsGeneratingPdf(true);
-    await new Promise(resolve => setTimeout(resolve, 50)); 
-
+    await new Promise(resolve => setTimeout(resolve, 50));
     if (invoiceRef.current) {
       html2pdf().set(pdfOptions).from(invoiceRef.current).save();
     }
@@ -106,7 +104,6 @@ export default function InvoicePreview() {
     try {
       setIsGeneratingPdf(true);
       await new Promise(resolve => setTimeout(resolve, 50));
-
       if (!invoiceRef.current) {
         setIsGeneratingPdf(false);
         return;
@@ -131,7 +128,6 @@ export default function InvoicePreview() {
 
   const handleItemChange = (index: number, field: ItemField, value: string) => {
     const updated = [...items];
-    
     updated[index][field] = value;
 
     const duration = parseFloat(updated[index].duration.replace(/[^\d.]/g, '')) || 0;
@@ -141,8 +137,8 @@ export default function InvoicePreview() {
       const calculatedAmount = duration * rate;
       updated[index].amount = calculatedAmount.toLocaleString('en-MY', { minimumFractionDigits: 2 });
     } else if (field === 'amount') {
-        const raw = parseFloat(value.replace(/,/g, ''));
-        updated[index].amount = isNaN(raw) ? '' : raw.toLocaleString('en-MY', { minimumFractionDigits: 2 });
+      const raw = parseFloat(value.replace(/,/g, ''));
+      updated[index].amount = isNaN(raw) ? '' : raw.toLocaleString('en-MY', { minimumFractionDigits: 2 });
     }
 
     setItems(updated);
@@ -175,7 +171,6 @@ export default function InvoicePreview() {
             >
               ☰
             </button>
-
             <div className="absolute top-1/2 right-16 transform -translate-y-1/2 flex flex-col gap-4">
               <div className={`transition-all duration-300 ${showMenu ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10 pointer-events-none'}`}>
                 <button onClick={handleDownloadPDF} className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 shadow-md">
@@ -198,10 +193,12 @@ export default function InvoicePreview() {
         )}
 
         <div ref={invoiceRef} className="bg-white border p-8 rounded shadow-md space-y-6 text-sm text-black">
+          {/* Header */}
           <div className="flex justify-between">
             <img src={logo} alt="Logo" className="h-28" />
           </div>
 
+          {/* Address & Metadata */}
           <div className="flex justify-between">
             <div>
               <p className="font-bold uppercase">PEEKING VISUALS</p>
@@ -210,69 +207,45 @@ export default function InvoicePreview() {
               <p>Petaling Jaya, Selangor</p>
             </div>
             <div className="text-right space-y-1">
-              <p>
-                <strong>Invoice:</strong>{' '}
-                {isGeneratingPdf ? (
-                  <span>{invoiceData.invoiceNo}</span>
-                ) : (
-                  <input value={invoiceData.invoiceNo} onChange={e => handleChange('invoiceNo', e.target.value)} className="border-b w-40" />
-                )}
+              <p><strong>Invoice:</strong>{' '}
+                {isGeneratingPdf ? <span>{invoiceData.invoiceNo}</span> :
+                  <input value={invoiceData.invoiceNo} onChange={e => handleChange('invoiceNo', e.target.value)} className="border-b w-40" />}
               </p>
-              <p>
-                <strong>Date:</strong>{' '}
-                {isGeneratingPdf ? (
-                  <span>{invoiceData.date}</span>
-                ) : (
-                  <input value={invoiceData.date} onChange={e => handleChange('date', e.target.value)} className="border-b w-40" />
-                )}
+              <p><strong>Date:</strong>{' '}
+                {isGeneratingPdf ? <span>{invoiceData.date}</span> :
+                  <input value={invoiceData.date} onChange={e => handleChange('date', e.target.value)} className="border-b w-40" />}
               </p>
             </div>
           </div>
 
+          {/* Client Info */}
           <div>
-            <p>
-              <strong>Client Name:</strong>{' '}
-              {isGeneratingPdf ? (
-                <span className="font-bold">{invoiceData.clientName}</span>
-              ) : (
-                <input value={invoiceData.clientName} onChange={e => handleChange('clientName', e.target.value)} className="border-b w-60 font-bold" />
-              )}
+            <p><strong>Client Name:</strong>{' '}
+              {isGeneratingPdf ? <span className="font-bold">{invoiceData.clientName}</span> :
+                <input value={invoiceData.clientName} onChange={e => handleChange('clientName', e.target.value)} className="border-b w-60 font-bold" />}
             </p>
-            <p>
-              <strong>Client Address:</strong>{' '}
-              {isGeneratingPdf ? (
-                <span>{invoiceData.clientAddress}</span>
-              ) : (
-                <input value={invoiceData.clientAddress} onChange={e => handleChange('clientAddress', e.target.value)} className="border-b w-96" />
-              )}
+            <p><strong>Client Address:</strong>{' '}
+              {isGeneratingPdf ? <span>{invoiceData.clientAddress}</span> :
+                <input value={invoiceData.clientAddress} onChange={e => handleChange('clientAddress', e.target.value)} className="border-b w-96" />}
             </p>
           </div>
 
+          {/* Event Info */}
           <div className="space-y-2">
             <p>
               {invoiceData.isMultipleDay ? (
-                isGeneratingPdf ? (
-                  <>
-                    This invoice is for the event from {invoiceData.eventDate} to {invoiceData.eventEndDate}
-                  </>
-                ) : (
-                  <>
-                    This invoice is for the event from{' '}
+                isGeneratingPdf ?
+                  <>This invoice is for the event from {invoiceData.eventDate} to {invoiceData.eventEndDate}</> :
+                  <>This invoice is for the event from{' '}
                     <input value={invoiceData.eventDate} onChange={(e) => handleChange('eventDate', e.target.value)} className="border-b w-32" /> to{' '}
                     <input value={invoiceData.eventEndDate} onChange={(e) => handleChange('eventEndDate', e.target.value)} className="border-b w-32" />
                   </>
-                )
               ) : (
-                isGeneratingPdf ? (
-                  <>
-                    This invoice is for the event on {invoiceData.eventDate}
-                  </>
-                ) : (
-                  <>
-                    This invoice is for the event on{' '}
+                isGeneratingPdf ?
+                  <>This invoice is for the event on {invoiceData.eventDate}</> :
+                  <>This invoice is for the event on{' '}
                     <input value={invoiceData.eventDate} onChange={(e) => handleChange('eventDate', e.target.value)} className="border-b w-40" />
                   </>
-                )
               )}
             </p>
             {!isGeneratingPdf && (
@@ -283,6 +256,7 @@ export default function InvoicePreview() {
             )}
           </div>
 
+          {/* Items Table */}
           <table className="w-full border mt-4 text-sm">
             <thead>
               <tr className="bg-gray-200 text-black text-center">
@@ -307,51 +281,38 @@ export default function InvoicePreview() {
                         <textarea
                           placeholder="short description"
                           value={item.description}
-                          onChange={(e) => {
-                            handleItemChange(i, 'description', e.target.value);
-                          }}
+                          onChange={(e) => handleItemChange(i, 'description', e.target.value)}
                           ref={el => { descriptionRefs.current[i] = el; }}
-                          className="w-full text-xs mt-1 h-auto min-h-[40px] resize-y" // Changed resize-none to resize-y
+                          className="w-full text-xs mt-1 h-auto min-h-[40px] resize-y"
                         />
                       </>
                     )}
                   </td>
                   <td className="border px-2 py-1 text-right">
-                    {isGeneratingPdf ? (
-                      <span>{item.duration}</span>
-                    ) : (
-                      <input value={item.duration} onChange={(e) => handleItemChange(i, 'duration', e.target.value)} className="w-full text-right" />
-                    )}
+                    {isGeneratingPdf ? <span>{item.duration}</span> :
+                      <input value={item.duration} onChange={(e) => handleItemChange(i, 'duration', e.target.value)} className="w-full text-right" />}
                   </td>
                   <td className="border px-2 py-1 text-right">
-                    {isGeneratingPdf ? (
-                      <span>{item.rate}</span>
-                    ) : (
-                      <input value={item.rate} onChange={(e) => handleItemChange(i, 'rate', e.target.value)} className="w-full text-right" />
-                    )}
+                    {isGeneratingPdf ? <span>{item.rate}</span> :
+                      <input value={item.rate} onChange={(e) => handleItemChange(i, 'rate', e.target.value)} className="w-full text-right" />}
                   </td>
                   <td className="border px-2 py-1 text-right">
-                    {isGeneratingPdf ? (
-                      <span>{item.amount}</span>
-                    ) : (
-                      <input
-                        value={item.amount}
-                        onChange={(e) => handleItemChange(i, 'amount', e.target.value)}
-                        className="w-full text-right"
-                      />
-                    )}
+                    {isGeneratingPdf ? <span>{item.amount}</span> :
+                      <input value={item.amount} onChange={(e) => handleItemChange(i, 'amount', e.target.value)} className="w-full text-right" />}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
 
+          {/* Add Item */}
           {!isGeneratingPdf && (
             <button onClick={addRow} className="mt-2 px-4 py-1 bg-green-600 text-white rounded hover:bg-green-700">
               Add Item
             </button>
           )}
 
+          {/* Comments */}
           <div>
             <p><strong>Additional Comments:</strong></p>
             {isGeneratingPdf ? (
@@ -361,23 +322,19 @@ export default function InvoicePreview() {
             )}
           </div>
 
+          {/* Totals */}
           <div className="text-right space-y-2">
-            <p>
-              <strong>Total Amount:</strong>{' '}
-              {isGeneratingPdf ? (
-                <span>{invoiceData.total}</span>
-              ) : (
-                <input value={invoiceData.total} onChange={(e) => handleChange('total', e.target.value)} className="border-b w-40 font-bold text-right" />
-              )}
+            <p><strong>Total Amount:</strong>{' '}
+              {isGeneratingPdf ? <span>{invoiceData.total}</span> :
+                <input value={invoiceData.total} onChange={(e) => handleChange('total', e.target.value)} className="border-b w-40 font-bold text-right" />}
             </p>
             <p className="italic">{invoiceData.totalWords}</p>
             <p className="italic text-xs">* Ringgit Malaysia Only *</p>
           </div>
 
+          {/* Footer */}
           <div className="pt-6">
-            <p>
-              <strong>Validity:</strong> 30 days from invoice date.
-            </p>
+            <p><strong>Validity:</strong> 30 days from invoice date.</p>
             <p className="font-bold">PAYMENT DETAILS:</p>
             <p>MAYBANK</p>
             <p>PK VISUALS ENTERPRISE</p>
