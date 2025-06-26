@@ -1,5 +1,4 @@
 // src/components/BackToDashboard.tsx
-import React from 'react';
 import { Link } from 'react-router-dom';
 
 export default function BackToDashboard() {
