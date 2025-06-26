@@ -1,11 +1,10 @@
-// src/api/axiosInstance.ts
-import axios from "axios";
+import axios from 'axios';
 
-const axiosInstance = axios.create({
-  baseURL: "http://localhost:5000/api",
+const instance = axios.create({
+  baseURL: import.meta.env.VITE_API_URL, // ✅ must use this
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
 });
 
-export default axiosInstance;
+export default instance;
