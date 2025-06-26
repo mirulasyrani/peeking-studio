@@ -17,9 +17,9 @@ const app = express();
 
 // --- CORS Configuration ---
 app.use(cors({
-  origin: 'https://peeking-studio.pages.dev', // ✅ Allow only your frontend domain
+  origin: 'https://peeking-studio.pages.dev', // Your frontend domain
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // --- Middleware ---
