@@ -1,9 +1,16 @@
-// src/api/axiosInstance.ts
-import axios from "axios";
+// db.js
+require('dotenv').config();
+const { Pool } = require('pg');
 
-const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api",
-  withCredentials: true,
+const isProduction = process.env.NODE_ENV === 'production';
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: isProduction
+    ? { rejectUnauthorized: false } // ✅ Required by Railway and similar hosts
+    : false, // ❌ Disable SSL locally
 });
 
-export default axiosInstance;
+module.exports = {
+  query: (text, params) => pool.query(text, params),
+};
