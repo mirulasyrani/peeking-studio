@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap');
 
-/* @tailwind base;
+/* index.css */
+@tailwind base;
 @tailwind components;
-@tailwind utilities; */
-
+@tailwind utilities;
 
 body {
   background-color: #f9fafb; /* Tailwind's bg-gray-50 */
