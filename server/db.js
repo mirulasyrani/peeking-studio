@@ -1,12 +1,9 @@
-const { Pool } = require('pg');
-require('dotenv').config();
+// src/api/axiosInstance.ts
+import axios from "axios";
 
-const pool = new Pool({
-  user: 'admin@peeking',
-  password: 'password123abc!@#',
-  host: 'localhost',
-  port: 5432,
-  database: 'photo-studio',
+const axiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api",
+  withCredentials: true,
 });
 
-module.exports = pool;
+export default axiosInstance;
