@@ -1,6 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function UploadImages() {
+  const navigate = useNavigate();
+
   const [title, setTitle] = useState('');
   const [folder, setFolder] = useState('');
   const [caption, setCaption] = useState('');
@@ -75,6 +78,14 @@ export default function UploadImages() {
 
   return (
     <div className="min-h-screen bg-[#17388E] text-white py-32 px-6">
+      <button
+        onClick={() => navigate('/admin')}
+        className="mb-6 bg-gray-100 text-[#17388E] font-semibold px-4 py-2 rounded hover:bg-gray-200 transition"
+        type="button"
+      >
+        ← Back to Dashboard
+      </button>
+
       <h1 className="text-3xl font-bold mb-8 text-center">Upload Project Images</h1>
 
       <form

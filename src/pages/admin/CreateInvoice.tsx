@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import BackToDashboard from '../../components/BackToDashboard';
 import { useNavigate } from 'react-router-dom';
 
 export default function CreateInvoice() {
@@ -29,6 +30,8 @@ export default function CreateInvoice() {
 
   return (
     <div className="min-h-screen bg-white text-gray-800 py-32 px-6">
+      <BackToDashboard />
+
       <h1 className="text-4xl font-bold text-center mb-8">Create Invoice</h1>
 
       <form

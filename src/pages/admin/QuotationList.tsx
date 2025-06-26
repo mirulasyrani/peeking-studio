@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BackToDashboard from '../../components/BackToDashboard';
 
 type QuotationItem = {
   description: string;
@@ -78,6 +79,11 @@ export default function CreateQuotation() {
 
   return (
     <div className="min-h-screen py-24 px-6 bg-white text-gray-800">
+      {/* Back to dashboard button */}
+      <div className="mb-6">
+        <BackToDashboard />
+      </div>
+
       <h1 className="text-4xl font-bold text-center mb-8">Create Quotation</h1>
 
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md space-y-6">

@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import html2pdf from 'html2pdf.js';
 import logo from '../../assets/peeking-inv-logo.png';
 import axios from '../../api/axiosInstance';
+import BackToDashboard from '../../components/BackToDashboard';
 
 function numberToWords(n: number): string {
   const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
@@ -342,6 +343,24 @@ export default function InvoicePreview() {
             <p>shalmabruhanutheen@gmail.com</p>
             <p>60122962550</p>
           </div>
+           return (
+    <div className="min-h-screen bg-white text-black px-4 py-8 relative">
+      {/* Back to dashboard button at the top */}
+      <div className="mb-6">
+        <BackToDashboard />
+      </div>
+
+      {!isGeneratingPdf && (
+        <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-50">
+          {/* ... existing radial menu button code ... */}
+        </div>
+      )}
+
+      <div className="max-w-[800px] mx-auto">
+        {/* ... rest of your component ... */}
+      </div>
+    </div>
+  );
         </div>
       </div>
     </div>

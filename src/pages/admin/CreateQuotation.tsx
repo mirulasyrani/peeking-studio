@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../api/axiosInstance';
 import { z } from 'zod';
+import BackToDashboard from '../../components/BackToDashboard';  // <-- import the button component
 
 type Item = {
   description: string;
@@ -126,6 +127,8 @@ export default function CreateQuotation() {
 
   return (
     <div className="min-h-screen bg-white py-20 px-6 text-gray-800">
+      <BackToDashboard />  {/* <-- Added here */}
+
       <h1 className="text-3xl font-bold text-center mb-8">Create Quotation</h1>
 
       <form onSubmit={handleSubmit} className="max-w-3xl mx-auto space-y-6">

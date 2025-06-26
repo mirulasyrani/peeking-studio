@@ -156,7 +156,6 @@ export default function QuotationPreview() {
         )}
         <h1 className="text-center text-3xl font-bold underline mb-4">Quotation</h1>
 
-
         <div
           ref={quotationRef}
           className="bg-white border p-8 rounded shadow-md text-sm w-full"
