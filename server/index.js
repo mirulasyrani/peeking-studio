@@ -1,4 +1,3 @@
-
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
@@ -24,12 +23,17 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // ✨ ADD THIS CONSOLE.LOG TO SEE THE ORIGIN ✨
+    console.log('Incoming request origin:', origin);
+
+    // Allow requests with no origin (like mobile apps, curl requests, or same-origin direct navigations)
     // AND allow requests whose origin is in the allowedOrigins list
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      // If the origin is not allowed, callback with an error.
+      // This will cause a CORS error in the browser.
+      callback(new Error('Not allowed by CORS: ' + origin));
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Specify allowed HTTP methods
