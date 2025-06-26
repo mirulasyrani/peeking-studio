@@ -5,48 +5,50 @@ const cors = require('cors');
 const path = require('path');
 const morgan = require('morgan');
 
+// --- Route Imports ---
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const adminAuthRoutes = require('./routes/adminAuth');
 const quotationRoutes = require('./routes/quotation');
-const uploadRoutes = require("./routes/upload");
-const galleryRoutes = require("./routes/galleryRoutes"); // cleaner import
+const uploadRoutes = require('./routes/upload');
+const galleryRoutes = require('./routes/galleryRoutes');
 
 const app = express();
 
+// --- CORS Configuration ---
+app.use(cors({
+  origin: 'https://peeking-studio.pages.dev', // ✅ Allow only your frontend domain
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type'],
+}));
+
 // --- Middleware ---
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan('dev')); // Logging requests
+app.use(morgan('dev'));
 
 // --- API Routes ---
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin', adminAuthRoutes);
 app.use('/api/quotations', quotationRoutes);
-app.use("/api/upload", uploadRoutes);
-app.use("/api/gallery", galleryRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/gallery', galleryRoutes);
 
-// --- Serve static image files ---
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// --- Serve Static Uploads ---
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// --- Optional: Serve frontend build ---
-// Uncomment this if you have a frontend build to serve from backend
-// app.use(express.static(path.join(__dirname, 'client-dist')));
-// app.get('*', (req, res) => {
-//   res.sendFile(path.join(__dirname, 'client-dist', 'index.html'));
-// });
-
-// --- Root Route ---
+// --- Root Test Route ---
 app.get('/', (req, res) => {
   res.send('✅ Photo Studio Backend API Running');
 });
 
-// --- 404 Handler ---
+// --- 404 Fallback ---
 app.use((req, res) => {
   res.status(404).json({ message: 'Not Found' });
 });
 
-// --- Start server ---
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+// --- Start Server ---
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+});
