@@ -20,7 +20,7 @@ const allowedOrigins = [
   'https://peeking-studio.pages.dev',
 ];
 
-app.use(cors({
+const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -31,10 +31,13 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
-}));
+  optionsSuccessStatus: 200, // Some legacy browsers choke on 204
+};
 
-// ✅ Allow preflight requests
-app.options('*', cors()); // <--- ADD THIS LINE
+app.use(cors(corsOptions));
+
+// ✅ Respond to preflight requests
+app.options('*', cors(corsOptions));
 
 // --- Middleware ---
 app.use(express.json());
@@ -49,10 +52,10 @@ app.use('/api/quotations', quotationRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/gallery', galleryRoutes);
 
-// --- Serve Static Uploads ---
+// --- Serve Uploaded Files ---
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// --- Root Test Route ---
+// --- Root Route ---
 app.get('/', (req, res) => {
   res.send('✅ Photo Studio Backend API Running');
 });
@@ -63,4 +66,6 @@ app.use((req, res) => {
 });
 
 // --- Start Server ---
-app.listen(PORT, () =>
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+});
