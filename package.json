@@ -12,6 +12,7 @@
   "dependencies": {
     "@headlessui/react": "^2.2.4",
     "@hookform/resolvers": "^5.1.1",
+    "@tailwindcss/line-clamp": "^0.4.4",
     "axios": "^1.10.0",
     "cors": "^2.8.5",
     "framer-motion": "^12.18.1",
