@@ -14,4 +14,7 @@ module.exports = {
       display: ['print'], // Enable print variant for display utilities
     },
   },
+  plugins: [
+  require('@tailwindcss/line-clamp'),
+],
 };

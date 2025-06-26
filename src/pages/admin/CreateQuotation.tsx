@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../api/axiosInstance';
 import { z } from 'zod';
-import BackToDashboard from '../../components/BackToDashboard';  // <-- import the button component
+import BackToDashboard from '../../components/BackToDashboard';
 
 type Item = {
   description: string;
@@ -11,7 +11,6 @@ type Item = {
   total: string;
 };
 
-// Zod schema for frontend validation
 const frontendSchema = z.object({
   quotation_no: z.string().min(1),
   client_name: z.string().min(1),
@@ -106,7 +105,10 @@ export default function CreateQuotation() {
     }
 
     try {
-      const res = await axios.post('/quotations', payload);
+      const url = `${import.meta.env.VITE_API_URL}/api/quotations`;
+      console.log('📤 Sending to:', url);
+
+      const res = await axios.post(url, payload);
       navigate(`/admin/quotations/${res.data.id}`);
 
       setFormData({
@@ -120,14 +122,14 @@ export default function CreateQuotation() {
       });
       setItems([{ description: '', quantity: '', unit_price: '', total: '' }]);
     } catch (err) {
-      console.error('Failed to create quotation:', err);
+      console.error('❌ Failed to create quotation:', err);
       alert('Error saving quotation.');
     }
   };
 
   return (
     <div className="min-h-screen bg-white py-20 px-6 text-gray-800">
-      <BackToDashboard />  {/* <-- Added here */}
+      <BackToDashboard />
 
       <h1 className="text-3xl font-bold text-center mb-8">Create Quotation</h1>
 
