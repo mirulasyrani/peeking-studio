@@ -1,7 +1,9 @@
+
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const morgan = require('morgan');
+const cors = require('cors'); // ✨ Import the cors package ✨
 
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -13,32 +15,33 @@ const galleryRoutes = require('./routes/galleryRoutes');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ Manual CORS Fix
+// --- Configure CORS using the 'cors' package ---
+// Define your allowed origins
 const allowedOrigins = [
   'http://localhost:5173',
   'https://peeking-studio.pages.dev'
 ];
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-
-  // ✅ Short-circuit for OPTIONS
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(204);
-  }
-  next();
-});
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    // AND allow requests whose origin is in the allowedOrigins list
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Specify allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Specify allowed headers in the request
+  credentials: true // Allow cookies, authorization headers, etc. to be sent
+}));
 
 // --- Middleware ---
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(morgan('dev'));
+// Ensure CORS middleware is applied BEFORE any other route or body parser middleware
+app.use(express.json()); // Body parser for JSON
+app.use(express.urlencoded({ extended: true })); // Body parser for URL-encoded data
+app.use(morgan('dev')); // HTTP request logger
 
 // --- API Routes ---
 app.use('/api/invoices', invoiceRoutes);
