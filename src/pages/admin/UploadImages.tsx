@@ -41,6 +41,8 @@ export default function UploadImages() {
       formData.append('folder', folder.trim());
       formData.append('caption', caption.trim());
       images.forEach((imageFile) => formData.append('images', imageFile));
+      
+      console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/upload/upload`, {
         method: 'POST',
