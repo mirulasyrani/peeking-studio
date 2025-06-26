@@ -44,11 +44,13 @@ const UploadGallery = () => {
     Array.from(images).forEach((image) => formData.append("images", image));
 
     try {
-      const res = await axios.post<UploadResponse>("http://localhost:5000/api/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const res = await axios.post<UploadResponse>(
+        `${import.meta.env.VITE_API_URL}/api/upload`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
       setStatus(`✅ ${res.data.message}`);
       setProject("");
@@ -111,6 +113,7 @@ const UploadGallery = () => {
           Upload
         </button>
       </form>
+
       {status && (
         <div className="mt-4 text-sm" data-testid="upload-status">
           {status}

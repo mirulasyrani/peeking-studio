@@ -18,9 +18,8 @@ export default function UploadImages() {
       const fileArray = Array.from(files);
       setImages(fileArray);
 
-      // Revoke old URLs to avoid memory leaks
+      // Revoke previous preview URLs to avoid memory leaks
       previewUrls.forEach(url => URL.revokeObjectURL(url));
-
       setPreviewUrls(fileArray.map(file => URL.createObjectURL(file)));
     }
   };
@@ -41,24 +40,17 @@ export default function UploadImages() {
       formData.append('title', title.trim());
       formData.append('folder', folder.trim());
       formData.append('caption', caption.trim());
+      images.forEach((imageFile) => formData.append('images', imageFile));
 
-      images.forEach((imageFile) => {
-        formData.append('images', imageFile);
-      });
-
-      const response = await fetch('/api/upload/upload', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/upload/upload`, {
         method: 'POST',
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error(`Upload failed: ${response.statusText}`);
-      }
-
+      if (!response.ok) throw new Error(`Upload failed: ${response.statusText}`);
       const data = await response.json();
-      setMessage(`Upload successful! Uploaded ${data.files.length} file(s).`);
 
-      // Reset form on success
+      setMessage(`✅ Upload successful! Uploaded ${data.files.length} file(s).`);
       setTitle('');
       setFolder('');
       setCaption('');
@@ -66,11 +58,8 @@ export default function UploadImages() {
       previewUrls.forEach(url => URL.revokeObjectURL(url));
       setPreviewUrls([]);
     } catch (error: unknown) {
-      let errorMessage = 'Unknown error';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      setMessage(`Error: ${errorMessage}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setMessage(`❌ Error: ${errorMessage}`);
     } finally {
       setUploading(false);
     }
