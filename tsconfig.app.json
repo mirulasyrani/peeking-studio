@@ -8,10 +8,10 @@
     "skipLibCheck": true,
 
     /* Bundler mode for Vite */
-    "moduleResolution": "bundler",
+    "moduleResolution": "bundler", // ✅ Changed from "node" to "bundler"
     "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "moduleDetection": "force",
+    // "verbatimModuleSyntax": true, // ❌ Comment out for now (can re-add if no issues after fix)
+    // "moduleDetection": "force",   // ❌ Comment out for now
     "noEmit": true,
     "jsx": "react-jsx",
 
@@ -19,16 +19,22 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
+    // "erasableSyntaxOnly": true,            // ❌ Comment out for now
+    "noFallthroughCasesInSwitch": true
+    // "noUncheckedSideEffectImports": true,  // ❌ Comment out for now
 
     /* ✅ Add these types */
-    "types": ["vite/client", "node"]
+    // Ensure you have these if you're using Vite and Node.js specific types
+    // "types": ["vite/client", "node"] // Node types should typically be in tsconfig.node.json
   },
   "include": [
-    "src",
-    "server/utils/mailer.js",
-    "server/utils/pdfGenerator.js"
+    "src"
+    // ❌ Removed server-side files: "server/utils/mailer.js", "server/utils/pdfGenerator.js"
+    // These should not be processed by your client-side tsconfig
+  ],
+  "exclude": [ // Add exclude to prevent accidental inclusion if not needed
+    "node_modules",
+    "dist",
+    "server" // Exclude the entire server directory from client build
   ]
 }

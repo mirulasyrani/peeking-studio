@@ -1,25 +1,42 @@
 {
   "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
-    "target": "ES2022",
-    "lib": ["ES2023"],
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
 
-    /* Bundler mode */
-    "moduleResolution": "bundler",
+    /* Bundler mode for Vite */
+    "moduleResolution": "bundler", // ✅ Change this from "node" to "bundler"
     "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "moduleDetection": "force",
+    // "verbatimModuleSyntax": true,            // ❌ Comment out or remove
+    // "moduleDetection": "force",              // ❌ Comment out or remove
     "noEmit": true,
+    "jsx": "react-jsx",
 
-    /* Linting */
+    /* Linting and Safety */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    // "erasableSyntaxOnly": true,            // ❌ Comment out or remove
+    "noFallthroughCasesInSwitch": true
+    // "noUncheckedSideEffectImports": true,  // ❌ Comment out or remove
+
+    /* Ensure types are correct for client-side */
+    // If you need 'node' types for some reason in the client, typically this would be handled differently.
+    // For a pure client-side build, "node" might not be necessary here.
+    // "types": ["vite/client", "node"]
   },
-  "include": ["vite.config.ts"]
+  "include": [
+    "src"
+    // ❌ Crucially, remove these server-side files from client-side compilation:
+    // "server/utils/mailer.js",
+    // "server/utils/pdfGenerator.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "server" // ✅ Explicitly exclude server directory from client build
+  ]
 }

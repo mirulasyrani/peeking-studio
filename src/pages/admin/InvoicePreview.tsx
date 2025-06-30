@@ -1,9 +1,47 @@
+import * as React from 'react'; // Added explicit import for React
 import { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import html2pdf from 'html2pdf.js';
 import logo from '../../assets/peeking-inv-logo.png';
 import axios from '../../api/axiosInstance';
 import BackToDashboard from '../../components/BackToDashboard';
+
+// Helper function to format date to dd/mm/yyyy
+const formatToDDMMYYYY = (dateString: string): string => {
+  if (!dateString) return '';
+  try {
+    const date = new Date(dateString);
+    // Use Intl.DateTimeFormat for robust formatting.
+    // 'en-GB' locale usually gives dd/mm/yyyy.
+    // Ensure leading zeros for day and month.
+    return new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(date);
+  } catch (e) {
+    console.error("Invalid date string for formatting:", dateString, e);
+    return dateString; // Return original if parsing fails
+  }
+};
+
+// Helper function to parse dd/mm/yyyy into a Date object (for internal use)
+const parseDDMMYYYY = (dateString: string): Date | null => {
+  if (!dateString) return null;
+  const parts = dateString.split('/');
+  if (parts.length === 3) {
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
+    const year = parseInt(parts[2], 10);
+    const date = new Date(year, month, day);
+    // Basic validation to check if the date parts form a valid date
+    if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
+      return date;
+    }
+  }
+  return null;
+};
+
 
 function numberToWords(n: number): string {
   const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
@@ -35,12 +73,13 @@ export default function InvoicePreview() {
 
   const [invoiceData, setInvoiceData] = useState({
     invoiceNo: 'INV-001',
-    date: locationState.date || new Date().toLocaleDateString('en-MY'),
+    // Initialize date fields using the formatting helper
+    date: locationState.date ? formatToDDMMYYYY(locationState.date) : formatToDDMMYYYY(new Date().toLocaleDateString('en-MY')),
     clientName: locationState.clientName || '',
     clientAddress: locationState.clientAddress || '',
-    eventDate: locationState.date || '',
-    eventEndDate: '',
-    isMultipleDay: false,
+    eventDate: locationState.eventDate ? formatToDDMMYYYY(locationState.eventDate) : '', // Assuming eventDate might also come from location state
+    eventEndDate: locationState.eventEndDate ? formatToDDMMYYYY(locationState.eventEndDate) : '',
+    isMultipleDay: locationState.isMultipleDay || false, // Initialize from locationState
     comments: '',
     total: '',
     totalWords: '',
@@ -124,8 +163,17 @@ export default function InvoicePreview() {
   };
 
   const handleChange = (field: string, value: string | boolean) => {
-    setInvoiceData(prev => ({ ...prev, [field]: value }));
+    if (field === 'date' || field === 'eventDate' || field === 'eventEndDate') {
+      // For date fields, parse and then format to dd/mm/yyyy
+      // This ensures that even if user types something like YYYY-MM-DD,
+      // it gets converted to DD/MM/YYYY for display.
+      const formattedDate = formatToDDMMYYYY(value as string);
+      setInvoiceData(prev => ({ ...prev, [field]: formattedDate }));
+    } else {
+      setInvoiceData(prev => ({ ...prev, [field]: value }));
+    }
   };
+
 
   const handleItemChange = (index: number, field: ItemField, value: string) => {
     const updated = [...items];
@@ -163,6 +211,10 @@ export default function InvoicePreview() {
 
   return (
     <div className="min-h-screen bg-white text-black px-4 py-8 relative">
+      <div className="mb-6">
+        <BackToDashboard />
+      </div>
+
       {!isGeneratingPdf && (
         <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-50">
           <div className="relative">
@@ -189,9 +241,7 @@ export default function InvoicePreview() {
       )}
 
       <div className="max-w-[800px] mx-auto">
-        {!isGeneratingPdf && (
-          <h1 className="text-2xl font-bold text-[#102866] mb-6">Invoice Preview</h1>
-        )}
+        {!isGeneratingPdf && <h1 className="text-2xl font-bold text-[#102866] mb-6">Invoice Preview</h1>}
 
         <div ref={invoiceRef} className="bg-white border p-8 rounded shadow-md space-y-6 text-sm text-black">
           {/* Header */}
@@ -238,14 +288,32 @@ export default function InvoicePreview() {
                 isGeneratingPdf ?
                   <>This invoice is for the event from {invoiceData.eventDate} to {invoiceData.eventEndDate}</> :
                   <>This invoice is for the event from{' '}
-                    <input value={invoiceData.eventDate} onChange={(e) => handleChange('eventDate', e.target.value)} className="border-b w-32" /> to{' '}
-                    <input value={invoiceData.eventEndDate} onChange={(e) => handleChange('eventEndDate', e.target.value)} className="border-b w-32" />
+                    <input
+                      type="text" // Keep as text to allow user input, then format on change
+                      value={invoiceData.eventDate}
+                      onChange={(e) => handleChange('eventDate', e.target.value)}
+                      className="border-b w-32"
+                      placeholder="DD/MM/YYYY" // Add placeholder for user guidance
+                    /> to{' '}
+                    <input
+                      type="text" // Keep as text
+                      value={invoiceData.eventEndDate}
+                      onChange={(e) => handleChange('eventEndDate', e.target.value)}
+                      className="border-b w-32"
+                      placeholder="DD/MM/YYYY" // Add placeholder for user guidance
+                    />
                   </>
               ) : (
                 isGeneratingPdf ?
                   <>This invoice is for the event on {invoiceData.eventDate}</> :
                   <>This invoice is for the event on{' '}
-                    <input value={invoiceData.eventDate} onChange={(e) => handleChange('eventDate', e.target.value)} className="border-b w-40" />
+                    <input
+                      type="text" // Keep as text
+                      value={invoiceData.eventDate}
+                      onChange={(e) => handleChange('eventDate', e.target.value)}
+                      className="border-b w-40"
+                      placeholder="DD/MM/YYYY" // Add placeholder for user guidance
+                    />
                   </>
               )}
             </p>
@@ -343,24 +411,6 @@ export default function InvoicePreview() {
             <p>shalmabruhanutheen@gmail.com</p>
             <p>60122962550</p>
           </div>
-           return (
-    <div className="min-h-screen bg-white text-black px-4 py-8 relative">
-      {/* Back to dashboard button at the top */}
-      <div className="mb-6">
-        <BackToDashboard />
-      </div>
-
-      {!isGeneratingPdf && (
-        <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-50">
-          {/* ... existing radial menu button code ... */}
-        </div>
-      )}
-
-      <div className="max-w-[800px] mx-auto">
-        {/* ... rest of your component ... */}
-      </div>
-    </div>
-  );
         </div>
       </div>
     </div>
