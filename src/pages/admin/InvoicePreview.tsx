@@ -1,4 +1,4 @@
-import * as React from 'react'; // Added explicit import for React
+// Remove: import * as React from 'react'; // Not strictly needed for JSX in modern React/Vite
 import { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import html2pdf from 'html2pdf.js';
@@ -11,9 +11,6 @@ const formatToDDMMYYYY = (dateString: string): string => {
   if (!dateString) return '';
   try {
     const date = new Date(dateString);
-    // Use Intl.DateTimeFormat for robust formatting.
-    // 'en-GB' locale usually gives dd/mm/yyyy.
-    // Ensure leading zeros for day and month.
     return new Intl.DateTimeFormat('en-GB', {
       day: '2-digit',
       month: '2-digit',
@@ -25,22 +22,21 @@ const formatToDDMMYYYY = (dateString: string): string => {
   }
 };
 
-// Helper function to parse dd/mm/yyyy into a Date object (for internal use)
-const parseDDMMYYYY = (dateString: string): Date | null => {
-  if (!dateString) return null;
-  const parts = dateString.split('/');
-  if (parts.length === 3) {
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
-    const year = parseInt(parts[2], 10);
-    const date = new Date(year, month, day);
-    // Basic validation to check if the date parts form a valid date
-    if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
-      return date;
-    }
-  }
-  return null;
-};
+// REMOVED: parseDDMMYYYY function because it's not being used and causes TS6133
+// const parseDDMMYYYY = (dateString: string): Date | null => {
+//   if (!dateString) return null;
+//   const parts = dateString.split('/');
+//   if (parts.length === 3) {
+//     const day = parseInt(parts[0], 10);
+//     const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
+//     const year = parseInt(parts[2], 10);
+//     const date = new Date(year, month, day);
+//     if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
+//       return date;
+//     }
+//   }
+//   return null;
+// };
 
 
 function numberToWords(n: number): string {
@@ -73,13 +69,12 @@ export default function InvoicePreview() {
 
   const [invoiceData, setInvoiceData] = useState({
     invoiceNo: 'INV-001',
-    // Initialize date fields using the formatting helper
     date: locationState.date ? formatToDDMMYYYY(locationState.date) : formatToDDMMYYYY(new Date().toLocaleDateString('en-MY')),
     clientName: locationState.clientName || '',
     clientAddress: locationState.clientAddress || '',
-    eventDate: locationState.eventDate ? formatToDDMMYYYY(locationState.eventDate) : '', // Assuming eventDate might also come from location state
+    eventDate: locationState.eventDate ? formatToDDMMYYYY(locationState.eventDate) : '',
     eventEndDate: locationState.eventEndDate ? formatToDDMMYYYY(locationState.eventEndDate) : '',
-    isMultipleDay: locationState.isMultipleDay || false, // Initialize from locationState
+    isMultipleDay: locationState.isMultipleDay || false,
     comments: '',
     total: '',
     totalWords: '',
@@ -164,9 +159,6 @@ export default function InvoicePreview() {
 
   const handleChange = (field: string, value: string | boolean) => {
     if (field === 'date' || field === 'eventDate' || field === 'eventEndDate') {
-      // For date fields, parse and then format to dd/mm/yyyy
-      // This ensures that even if user types something like YYYY-MM-DD,
-      // it gets converted to DD/MM/YYYY for display.
       const formattedDate = formatToDDMMYYYY(value as string);
       setInvoiceData(prev => ({ ...prev, [field]: formattedDate }));
     } else {
@@ -289,18 +281,18 @@ export default function InvoicePreview() {
                   <>This invoice is for the event from {invoiceData.eventDate} to {invoiceData.eventEndDate}</> :
                   <>This invoice is for the event from{' '}
                     <input
-                      type="text" // Keep as text to allow user input, then format on change
+                      type="text"
                       value={invoiceData.eventDate}
                       onChange={(e) => handleChange('eventDate', e.target.value)}
                       className="border-b w-32"
-                      placeholder="DD/MM/YYYY" // Add placeholder for user guidance
+                      placeholder="DD/MM/YYYY"
                     /> to{' '}
                     <input
-                      type="text" // Keep as text
+                      type="text"
                       value={invoiceData.eventEndDate}
                       onChange={(e) => handleChange('eventEndDate', e.target.value)}
                       className="border-b w-32"
-                      placeholder="DD/MM/YYYY" // Add placeholder for user guidance
+                      placeholder="DD/MM/YYYY"
                     />
                   </>
               ) : (
@@ -308,11 +300,11 @@ export default function InvoicePreview() {
                   <>This invoice is for the event on {invoiceData.eventDate}</> :
                   <>This invoice is for the event on{' '}
                     <input
-                      type="text" // Keep as text
+                      type="text"
                       value={invoiceData.eventDate}
                       onChange={(e) => handleChange('eventDate', e.target.value)}
                       className="border-b w-40"
-                      placeholder="DD/MM/YYYY" // Add placeholder for user guidance
+                      placeholder="DD/MM/YYYY"
                     />
                   </>
               )}
