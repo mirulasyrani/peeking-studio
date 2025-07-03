@@ -37,6 +37,7 @@ pool.query('SELECT NOW()', (err, result) => {
 const allowedOrigins = [
   'http://localhost:5173',
   'https://peeking-studio.pages.dev',
+  'https://peeking-studio-production.up.railway.app'
 ];
 
 app.use(cors({
