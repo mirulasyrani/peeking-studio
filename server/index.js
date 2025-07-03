@@ -65,7 +65,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// ✅ Booking API Route
+// ✅ Booking API Route (with improved error logging)
 app.post('/api/bookings', async (req, res) => {
   const { name, email, phone, sessionType, notes, startTime, endTime } = req.body;
   console.log('📥 Booking payload:', req.body);
@@ -79,13 +79,19 @@ app.post('/api/bookings', async (req, res) => {
       `INSERT INTO bookings (name, email, phone, session_type, notes, start_time, end_time)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
-      [name, email, phone, sessionType, notes, startTime, endTime]
+      [name, email, phone, sessionType, notes || '', startTime, endTime]
     );
+
     console.log('✅ Booking inserted:', result.rows[0]);
     res.status(200).json({ message: 'Booking saved', data: result.rows[0] });
+
   } catch (err) {
-    console.error('❌ Booking insert error:', err.message);
-    res.status(500).json({ error: 'Database insert failed' });
+    console.error('❌ Booking insert error:', err); // 👈 shows full error object
+    res.status(500).json({
+      error: 'Database insert failed',
+      message: err.message,
+      stack: err.stack
+    });
   }
 });
 
@@ -97,10 +103,10 @@ app.use('/api/quotations', quotationRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/gallery', galleryRoutes);
 
-// ✅ Static uploads (images, etc.)
+// ✅ Static uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ✅ Test Route
+// ✅ Test route
 app.get('/', (req, res) => {
   res.send('✅ Photo Studio Backend API Running');
 });
@@ -110,7 +116,7 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Not Found' });
 });
 
-// ✅ Start Server
+// ✅ Start server
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });

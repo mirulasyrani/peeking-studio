@@ -42,28 +42,33 @@ export default function Book() {
       endTime: fullEnd.toISOString(),
     };
 
-  try {
-    const response = await fetch('https://peeking-studio-production.up.railway.app/api/bookings', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(bookingData),
-    });
+    try {
+      const response = await fetch('https://peeking-studio-production.up.railway.app/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingData),
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to submit booking');
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Server responded with error:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText,
+        });
+        throw new Error(`Failed to submit booking. Status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Booking submitted:', result);
+      setSubmitted(true);
+    } catch (error: any) {
+      console.error('❌ Error submitting booking:', error.message || error);
+      alert('There was a problem submitting your booking. Please try again later.');
     }
-
-    const result = await response.json();
-    console.log('✅ Booking submitted:', result);
-    setSubmitted(true);
-  } catch (error) {
-    console.error('❌ Error submitting booking:', error);
-    alert('There was a problem submitting your booking. Please try again later.');
-  }
-};
-
+  };
 
   return (
     <div className="min-h-screen bg-white text-gray-800 py-32 px-6">
