@@ -95,9 +95,9 @@ export default function Home() {
         <h2 className="text-3xl font-bold mb-6">Contact Us</h2>
         <p className="mb-4 text-gray-700">We’d love to hear from you! Reach out with questions, bookings, or ideas.</p>
         <div className="space-y-2 text-gray-700">
-          <p>Email: <a href="mailto:info@peekingvisuals.com" className="text-blue-700 hover:underline">info@peekingvisuals.com</a></p>
-          <p>Phone: +60 123-456-789</p>
-          <p>Location: Kuala Lumpur, Malaysia</p>
+          <p>Email: <a href="mailto:pkvisuals01@gmail.com" className="text-blue-700 hover:underline">pkvisuals01@gmail.com</a></p>
+          <p>Phone: +60 1139-3980-5631</p>
+          <p>Location: No 1-09, Jalan Teratai PJU 6A, Mukim, Pekan Kayu Ara, 47400 Petaling Jaya, Selangor</p>
         </div>
         <motion.div
           className="mt-6"
