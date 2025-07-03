@@ -22,7 +22,8 @@ export default function Book() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // 🔧 CHANGED: Send to Express backend at localhost:5000
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!selectedDate || !startTime || !endTime) {
@@ -36,13 +37,32 @@ export default function Book() {
     const fullEnd = new Date(selectedDate);
     fullEnd.setHours(endTime.getHours(), endTime.getMinutes());
 
-    console.log({
+    const bookingData = {
       ...formData,
-      startTime: fullStart.toString(),
-      endTime: fullEnd.toString(),
-    });
+      startTime: fullStart.toISOString(),
+      endTime: fullEnd.toISOString(),
+    };
 
-    setSubmitted(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit booking');
+      }
+
+      const result = await response.json();
+      console.log('Booking submitted:', result);
+      setSubmitted(true);
+    } catch (error) {
+      console.error('Error submitting booking:', error);
+      alert('There was a problem submitting your booking. Please try again later.');
+    }
   };
 
   return (
@@ -99,7 +119,6 @@ export default function Book() {
             <option value="studio">Studio Rental</option>
           </select>
 
-          {/* Date Picker */}
           <div>
             <label className="block mb-1 font-medium">Preferred Date</label>
             <DatePicker
@@ -113,7 +132,6 @@ export default function Book() {
             />
           </div>
 
-          {/* Start & End Time Pickers */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block mb-1 font-medium">Start Time</label>
@@ -121,7 +139,7 @@ export default function Book() {
                 selected={startTime}
                 onChange={(time) => {
                   setStartTime(time);
-                  setEndTime(null); // Reset end time
+                  setEndTime(null);
                 }}
                 showTimeSelect
                 showTimeSelectOnly
@@ -162,7 +180,6 @@ export default function Book() {
             </div>
           </div>
 
-          {/* Booking time summary */}
           {startTime && endTime && (
             <p className="text-sm text-gray-600 text-center">
               Booking time: {startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} –{' '}
