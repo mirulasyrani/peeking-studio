@@ -22,7 +22,6 @@ export default function Book() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 🔧 CHANGED: Send to Express backend at localhost:5000
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -43,27 +42,28 @@ export default function Book() {
       endTime: fullEnd.toISOString(),
     };
 
-    try {
-      const response = await fetch('http://localhost:5000/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookingData),
-      });
+  try {
+    const response = await fetch('https://peeking-studio-production.up.railway.app/api/bookings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(bookingData),
+    });
 
-      if (!response.ok) {
-        throw new Error('Failed to submit booking');
-      }
-
-      const result = await response.json();
-      console.log('Booking submitted:', result);
-      setSubmitted(true);
-    } catch (error) {
-      console.error('Error submitting booking:', error);
-      alert('There was a problem submitting your booking. Please try again later.');
+    if (!response.ok) {
+      throw new Error('Failed to submit booking');
     }
-  };
+
+    const result = await response.json();
+    console.log('✅ Booking submitted:', result);
+    setSubmitted(true);
+  } catch (error) {
+    console.error('❌ Error submitting booking:', error);
+    alert('There was a problem submitting your booking. Please try again later.');
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-white text-gray-800 py-32 px-6">
