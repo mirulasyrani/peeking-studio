@@ -33,16 +33,16 @@ pool.query('SELECT NOW()', (err, result) => {
   }
 });
 
-// --- CORS Configuration ---
+// ✅ CORS Configuration
 const allowedOrigins = [
   'http://localhost:5173',
   'https://peeking-studio.pages.dev',
-  'https://peeking-studio-production.up.railway.app'
+  'https://peeking-studio-production.up.railway.app',
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    console.log('Incoming request origin:', origin);
+    console.log('🌐 Incoming origin:', origin);
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -54,24 +54,21 @@ app.use(cors({
   credentials: true,
 }));
 
-// --- Middleware ---
+// ✅ Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
-// --- API Routes ---
-app.use('/api/invoices', invoiceRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/admin', adminAuthRoutes);
-app.use('/api/quotations', quotationRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/gallery', galleryRoutes);
+// ✅ Log incoming method + URL
+app.use((req, res, next) => {
+  console.log(`🛬 [${req.method}] ${req.originalUrl}`);
+  next();
+});
 
-// ✅ NEW: Booking Route
+// ✅ Booking API Route
 app.post('/api/bookings', async (req, res) => {
   const { name, email, phone, sessionType, notes, startTime, endTime } = req.body;
-
-  console.log('📥 Incoming booking data:', req.body);
+  console.log('📥 Booking payload:', req.body);
 
   if (!name || !email || !phone || !sessionType || !startTime || !endTime) {
     return res.status(400).json({ error: 'Missing required fields' });
@@ -84,30 +81,36 @@ app.post('/api/bookings', async (req, res) => {
        RETURNING *`,
       [name, email, phone, sessionType, notes, startTime, endTime]
     );
-
-    console.log('✅ Booking saved:', result.rows[0]);
-
+    console.log('✅ Booking inserted:', result.rows[0]);
     res.status(200).json({ message: 'Booking saved', data: result.rows[0] });
   } catch (err) {
-    console.error('❌ Booking insert error:', err.message, err.stack);
-    res.status(500).json({ error: err.message });
+    console.error('❌ Booking insert error:', err.message);
+    res.status(500).json({ error: 'Database insert failed' });
   }
 });
 
-// --- Static Uploads ---
+// ✅ API Routes
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminAuthRoutes);
+app.use('/api/quotations', quotationRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/gallery', galleryRoutes);
+
+// ✅ Static uploads (images, etc.)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// --- Test Route ---
+// ✅ Test Route
 app.get('/', (req, res) => {
   res.send('✅ Photo Studio Backend API Running');
 });
 
-// --- 404 Handler ---
+// ✅ 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: 'Not Found' });
 });
 
-// --- Start Server ---
+// ✅ Start Server
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
